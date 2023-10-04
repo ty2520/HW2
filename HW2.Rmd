@@ -22,12 +22,73 @@ pols_month_data = read_csv("./fivethirtyeight_datasets/pols-month.csv")
 unemployment_data = read_csv("./fivethirtyeight_datasets/unemployment.csv")
 snp_data = read_csv("./fivethirtyeight_datasets/snp.csv")
 ```
+Question 1
+First, clean the data in pols-month.csv. Use separate() to break up the variable mon into integer variables year, month, and day; replace month number with month name; create a president variable taking values gop and dem, and remove prez_dem and prez_gop; and remove the day variable.
 ```{r}
 pols_month_data = 
   janitor::clean_names(pols_month_data) |>
   separate(mon,c("year","month","day")) |>
-  mutate( month = month.name[as.numeric(month)])
+  mutate( month = month.name[as.numeric(month)]) |>
+  mutate(
+    president = case_when(
+      prez_dem == 1 ~ "dem",
+      prez_gop == 1 ~ "gop",
+    )
+  )|>
+  select(-prez_dem, -prez_gop, - day)
+```
+
+Second, clean the data in snp.csv using a similar process to the above. For consistency across datasets, arrange according to year and month, and organize so that year and month are the leading columns.
+```{r}
+snp_data = janitor::clean_names(snp_data) |>
+  separate(date,c("day","month","year")) |>
+  mutate( month = month.name[as.numeric(month)]) |>
+  relocate(c(year, month), .before = day) |>
+  mutate(year = paste0("20", year))
+```
+
+Third, tidy the unemployment data so that it can be merged with the previous datasets. This process will involve switching from “wide” to “long” format; ensuring that key variables have the same name; and ensuring that key variables take the same values.
+```{r}
+unemployment_data = janitor::clean_names(unemployment_data) |>
+  pivot_longer(
+    cols = -year,
+    names_to = "month",         
+    values_to = "unemployment_rate", 
+    names_prefix = ""
+  )
+month_name_mapping <- c(
+  "jan" = "January",
+  "feb" = "February",
+  "mar" = "March",
+  "apr" = "April",
+  "may" = "May",
+  "jun" = "June",
+  "jul" = "July",
+  "aug" = "August",
+  "sep" = "September",
+  "oct" = "October",
+  "nov" = "November",
+  "dec" = "December"
+)
+unemployment_data = 
+  unemployment_data |>
+  mutate(month = month_name_mapping[month])
   
 ```
 
+Join the datasets by merging snp into pols, and merging unemployment into the result.
+```{r}
+merged_pols_snp <- merge(pols_month_data, snp_data, by = c('year', 'month'), all.x = TRUE)
+final_merged_data <- merge(merged_pols_snp, unemployment_data, by = c('year', 'month'), all.x = TRUE)
+```
 
+Write a short paragraph about these datasets. Explain briefly what each dataset contained, and describe the resulting dataset (e.g. give the dimension, range of years, and names of key variables).
+```{r}
+col_names = colnames(final_merged_data)
+range(final_merged_data$year)
+```
+
+The dataset "pols-month" comprises 822 observations and 9 variables, providing insights into the political landscape in the United States. The variables include "mon" (date of the count), indicators for whether the president was Republican or Democratic ("prez_gop" and "prez_dem").
+The dataset "snp" consists of 787 observations and 2 variables, focusing on the performance of the Standard & Poor's stock market index (S&P).
+Lastly, the dataset "unemployment" encompasses 68 observations with 13 variables. It tracks unemployment percentages for each month of the year, from January to December, over multiple years. 
+This merged dataset has 985 observation of 12 variables and combines political, economic, and stock market data from 1947 to 2015. It contains {{r col_names}}
