@@ -15,6 +15,19 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 ```{r}
-
+library(tidyverse)
+library(dplyr)
+library(tidyr)
+pols_month_data = read_csv("./fivethirtyeight_datasets/pols-month.csv")
+unemployment_data = read_csv("./fivethirtyeight_datasets/unemployment.csv")
+snp_data = read_csv("./fivethirtyeight_datasets/snp.csv")
 ```
+```{r}
+pols_month_data = 
+  janitor::clean_names(pols_month_data) |>
+  separate(mon,c("year","month","day")) |>
+  mutate( month = month.name[as.numeric(month)])
+  
+```
+
 
