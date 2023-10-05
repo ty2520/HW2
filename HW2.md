@@ -68,11 +68,12 @@ snp_data = read_csv("./fivethirtyeight_datasets/snp.csv")
     ## ℹ Use `spec()` to retrieve the full column specification for this data.
     ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 
-Question 1 First, clean the data in pols-month.csv. Use separate() to
-break up the variable mon into integer variables year, month, and day;
-replace month number with month name; create a president variable taking
-values gop and dem, and remove prez_dem and prez_gop; and remove the day
-variable.
+# Question 1
+
+First, clean the data in pols-month.csv. Use separate() to break up the
+variable mon into integer variables year, month, and day; replace month
+number with month name; create a president variable taking values gop
+and dem, and remove prez_dem and prez_gop; and remove the day variable.
 
 ``` r
 pols_month_data = 
@@ -97,7 +98,8 @@ snp_data = janitor::clean_names(snp_data) |>
   separate(date,c("day","month","year")) |>
   mutate( month = month.name[as.numeric(month)]) |>
   relocate(c(year, month), .before = day) |>
-  mutate(year = paste0("20", year))
+  mutate(year = paste0("20", year)) |>
+  select(-day)
 ```
 
 Third, tidy the unemployment data so that it can be merged with the
@@ -145,7 +147,15 @@ dataset contained, and describe the resulting dataset (e.g. give the
 dimension, range of years, and names of key variables).
 
 ``` r
-col_names = colnames(final_merged_data)
+colnames(final_merged_data)
+```
+
+    ##  [1] "year"              "month"             "gov_gop"          
+    ##  [4] "sen_gop"           "rep_gop"           "gov_dem"          
+    ##  [7] "sen_dem"           "rep_dem"           "president"        
+    ## [10] "close"             "unemployment_rate"
+
+``` r
 range(final_merged_data$year)
 ```
 
@@ -161,4 +171,6 @@ Lastly, the dataset “unemployment” encompasses 68 observations with 13
 variables. It tracks unemployment percentages for each month of the
 year, from January to December, over multiple years. This merged dataset
 has 985 observation of 12 variables and combines political, economic,
-and stock market data from 1947 to 2015. It contains {{r col_names}}
+and stock market data from 1947 to 2015. The merged dataset contains
+columns “year”, “month”, “gov_gop”, “sen_gop”, “rep_gop”, “gov_dem”,
+“sen_dem”, “rep_dem”, “president”, “day” , “close”, “unemployment_rate”
