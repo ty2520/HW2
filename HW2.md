@@ -190,6 +190,8 @@ trash_wheel_data <- read_excel("~/Desktop/P8105/HW2/202309 Trash Wheel Collectio
     ## • `` -> `...15`
     ## • `` -> `...16`
 
+## Tidying Mr.Trash Wheel data
+
 ``` r
 trash_wheel_data = janitor::clean_names(trash_wheel_data) |>
   mutate(
@@ -205,6 +207,8 @@ trash_wheel_data = janitor::clean_names(trash_wheel_data) |>
 ```
 
     ## Warning: Unknown or uninitialised column: `dumpster`.
+
+## Tidying professor trash wheel data
 
 ``` r
 professor_trash_df = read_excel("~/Desktop/P8105/HW2/202309 Trash Wheel Collection Data.xlsx",
@@ -222,6 +226,8 @@ professor_trash_df = read_excel("~/Desktop/P8105/HW2/202309 Trash Wheel Collecti
   )
 ```
 
+## Tidying Gwynnda data
+
 ``` r
 Gwynnda_trash_df = read_excel("~/Desktop/P8105/HW2/202309 Trash Wheel Collection Data.xlsx",
                                sheet = "Gwynnda Trash Wheel") |>
@@ -237,6 +243,8 @@ Gwynnda_trash_df = read_excel("~/Desktop/P8105/HW2/202309 Trash Wheel Collection
     year = as.numeric(year)
   )
 ```
+
+## Combine three tidied dataframe
 
 ``` r
 trash_wheel_combined <- bind_rows(
@@ -266,8 +274,13 @@ collection; and various trash-related variables such as “total_weight”
 and “cigarette_butts.” Professor Trash Wheel collected 216.26 tons of
 trash. Furthermore, Gwynnda collected 16,300 cigarette butts during July
 2021. This combined dataset serves as a comprehensive record of the
-environmental impact and cleanup efforts of these dedicated entities. \#
-Question 3
+environmental impact and cleanup efforts of these dedicated entities.
+
+# Question 3
+
+Ensure that sex and APOE4 carrier status are appropriate encoded
+(i.e. not numeric), and remove any participants who do not meet the
+stated inclusion criteria (i.e. no MCI at baseline).
 
 ``` r
 baseline_data = read_csv("~/Desktop/P8105/HW2/data_mci/MCI_baseline.csv", skip = 1, na = ".") |>
@@ -290,6 +303,9 @@ no_baseline_removed = baseline_data |>
     current_age <  age_at_onset | is.na(age_at_onset)
   )
 ```
+
+When importing the data, I skipped the first row since it is column
+description. I also set “.” to NA values for my future cleaning process.
 
 How many participants were recruited, and of these how many develop MCI?
 What is the average baseline age? What proportion of women in the study
@@ -323,14 +339,17 @@ female_APOE4_carrier <- baseline_data |>
   filter(
     sex == "Female" & apoe4 == "carrier"
   )
-nrow(female_APOE4_carrier) / nrow(baseline_data)
+female <- baseline_data |>
+  filter(
+    sex == "Female"
+  )
+nrow(female_APOE4_carrier) / nrow(female)
 ```
 
-    ## [1] 0.1304348
+    ## [1] 0.2985782
 
 483 participants were recruited. 93 of these developed MCI. The average
-baseline age is 65.05. 0.1304348 of women in the study are APOE4
-carriers
+baseline age is 65.05. 0.299 of women in the study are APOE4 carriers
 
 ``` r
 mci_amyloid_data <- read_csv("data_mci/mci_amyloid.csv", skip = 1) |>
@@ -350,8 +369,10 @@ mci_amyloid_data <- read_csv("data_mci/mci_amyloid.csv", skip = 1) |>
     ## ℹ Use `spec()` to retrieve the full column specification for this data.
     ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 
-The data set recorded time (in years) elapsed since the study baseline
-to the visit where biomarker Amyloid \_ 42/40 ratio was measured
+When importing the data, I skipped the first row since it is column
+description. The dataset recorded time (in years) elapsed since the
+study baseline to the visit where biomarker Amyloid \_ 42/40 ratio was
+measured
 
 ``` r
 baseline_unique <- no_baseline_removed |>
