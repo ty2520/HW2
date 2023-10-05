@@ -198,7 +198,10 @@ trash_wheel_data = janitor::clean_names(trash_wheel_data) |>
   drop_na(trash_wheel_data$dumpster) |>
   mutate(
     trash_wheel_info = "Mr. Trash Wheel"
-         )
+         )|>
+  mutate(
+    year = as.numeric(year)
+  )
 ```
 
     ## Warning: Unknown or uninitialised column: `dumpster`.
@@ -213,7 +216,10 @@ professor_trash_df = read_excel("~/Desktop/P8105/HW2/202309 Trash Wheel Collecti
   drop_na(dumpster) |>
   mutate(
     trash_wheel_info = "professor"
-         )
+         ) |>
+  mutate(
+    year = as.numeric(year)
+  )
 ```
 
 ``` r
@@ -226,10 +232,42 @@ Gwynnda_trash_df = read_excel("~/Desktop/P8105/HW2/202309 Trash Wheel Collection
   drop_na(dumpster) |>
   mutate(
     trash_wheel_info = "Gwynnda"
-         )
+         )|>
+  mutate(
+    year = as.numeric(year)
+  )
 ```
 
-# Question 3
+``` r
+trash_wheel_combined <- bind_rows(
+  trash_wheel_data, professor_trash_df, Gwynnda_trash_df
+)
+sum(professor_trash_df$weight_tons)
+```
+
+    ## [1] 216.26
+
+``` r
+july_2021_ciga <- trash_wheel_combined |>
+  filter(trash_wheel_info == "Gwynnda", year == 2021, month == "July") |>
+  select(cigarette_butts)
+sum(july_2021_ciga)
+```
+
+    ## [1] 16300
+
+The combined dataset comprises trash information collected by three
+distinct entities: Mr. Trash Wheel, Professor Trash Wheel, and Gwynnda.
+In total, the dataset includes 846 observations, each providing valuable
+insights into the trash collected by these entities. Key variables in
+this dataset include “trash_wheel_info,” which identifies the entity
+responsible for the collection; date information indicating the date of
+collection; and various trash-related variables such as “total_weight”
+and “cigarette_butts.” Professor Trash Wheel collected 216.26 tons of
+trash. Furthermore, Gwynnda collected 16,300 cigarette butts during July
+2021. This combined dataset serves as a comprehensive record of the
+environmental impact and cleanup efforts of these dedicated entities. \#
+Question 3
 
 ``` r
 baseline_data = read_csv("~/Desktop/P8105/HW2/data_mci/MCI_baseline.csv", skip = 1, na = ".") |>
