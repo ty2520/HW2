@@ -31,6 +31,10 @@ library(tidyverse)
 ``` r
 library(dplyr)
 library(tidyr)
+library(readxl)
+```
+
+``` r
 pols_month_data = read_csv("./fivethirtyeight_datasets/pols-month.csv")
 ```
 
@@ -174,3 +178,177 @@ has 985 observation of 12 variables and combines political, economic,
 and stock market data from 1947 to 2015. The merged dataset contains
 columns “year”, “month”, “gov_gop”, “sen_gop”, “rep_gop”, “gov_dem”,
 “sen_dem”, “rep_dem”, “president”, “day” , “close”, “unemployment_rate”
+
+# Question 2
+
+``` r
+trash_wheel_data <- read_excel("~/Desktop/P8105/HW2/202309 Trash Wheel Collection Data.xlsx",
+                               sheet = "Mr. Trash Wheel")
+```
+
+    ## New names:
+    ## • `` -> `...15`
+    ## • `` -> `...16`
+
+``` r
+trash_wheel_data = janitor::clean_names(trash_wheel_data) |>
+  mutate(
+    homes_powered = weight_tons * 500 / 30
+  ) |>
+  drop_na(trash_wheel_data$dumpster) |>
+  mutate(
+    trash_wheel_info = "Mr. Trash Wheel"
+         )
+```
+
+    ## Warning: Unknown or uninitialised column: `dumpster`.
+
+``` r
+professor_trash_df = read_excel("~/Desktop/P8105/HW2/202309 Trash Wheel Collection Data.xlsx",
+                               sheet = "Professor Trash Wheel") |>
+  janitor::clean_names() |>
+  mutate(
+    homes_powered = weight_tons * 500 / 30
+  ) |>
+  drop_na(dumpster) |>
+  mutate(
+    trash_wheel_info = "professor"
+         )
+```
+
+``` r
+Gwynnda_trash_df = read_excel("~/Desktop/P8105/HW2/202309 Trash Wheel Collection Data.xlsx",
+                               sheet = "Gwynnda Trash Wheel") |>
+  janitor::clean_names() |>
+  mutate(
+    homes_powered = weight_tons * 500 / 30
+  ) |>
+  drop_na(dumpster) |>
+  mutate(
+    trash_wheel_info = "Gwynnda"
+         )
+```
+
+# Question 3
+
+``` r
+baseline_data = read_csv("~/Desktop/P8105/HW2/data_mci/MCI_baseline.csv", skip = 1, na = ".") |>
+  janitor::clean_names() |>
+  mutate(sex = ifelse(sex == 1, "Male", "Female"))|>
+  mutate(apoe4 = ifelse(apoe4 == 1, "carrier", "non-carrier"))
+```
+
+    ## Rows: 483 Columns: 6
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## Delimiter: ","
+    ## dbl (6): ID, Current Age, Sex, Education, apoe4, Age at onset
+    ## 
+    ## ℹ Use `spec()` to retrieve the full column specification for this data.
+    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+
+``` r
+no_baseline_removed = baseline_data |>
+  filter(
+    current_age <  age_at_onset | is.na(age_at_onset)
+  )
+```
+
+How many participants were recruited, and of these how many develop MCI?
+What is the average baseline age? What proportion of women in the study
+are APOE4 carriers?
+
+``` r
+nrow(baseline_data)
+```
+
+    ## [1] 483
+
+``` r
+MCI_developed = baseline_data |>
+    filter(
+    (current_age <  age_at_onset)
+  )
+
+nrow(MCI_developed)
+```
+
+    ## [1] 93
+
+``` r
+mean(baseline_data$current_age)
+```
+
+    ## [1] 65.04679
+
+``` r
+female_APOE4_carrier <- baseline_data |>
+  filter(
+    sex == "Female" & apoe4 == "carrier"
+  )
+nrow(female_APOE4_carrier) / nrow(baseline_data)
+```
+
+    ## [1] 0.1304348
+
+483 participants were recruited. 93 of these developed MCI. The average
+baseline age is 65.05. 0.1304348 of women in the study are APOE4
+carriers
+
+``` r
+mci_amyloid_data <- read_csv("data_mci/mci_amyloid.csv", skip = 1) |>
+  janitor::clean_names() |>
+  mutate(
+    id = study_id
+  )|>
+  select(- study_id)
+```
+
+    ## Rows: 487 Columns: 6
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## Delimiter: ","
+    ## chr (5): Baseline, Time 2, Time 4, Time 6, Time 8
+    ## dbl (1): Study ID
+    ## 
+    ## ℹ Use `spec()` to retrieve the full column specification for this data.
+    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+
+The data set recorded time (in years) elapsed since the study baseline
+to the visit where biomarker Amyloid \_ 42/40 ratio was measured
+
+``` r
+baseline_unique <- no_baseline_removed |>
+  anti_join(
+    mci_amyloid_data, by = "id"
+  )
+nrow(baseline_unique)
+```
+
+    ## [1] 8
+
+``` r
+amyloid_unique <- mci_amyloid_data |>
+  anti_join(
+    no_baseline_removed, by = "id"
+  )
+nrow(amyloid_unique)
+```
+
+    ## [1] 16
+
+8 participants appear in only the baseline dataset and 16 participants
+appear in only the amyloid dataset.
+
+``` r
+combined_data <- inner_join(no_baseline_removed,mci_amyloid_data, by = "id")
+```
+
+The resulting data set contains information for 471 participants that
+appeared both in the demographic and biomarker datasets. The dataset
+contains information about their demographic information and time (in
+years) elapsed since the study baseline to the visit where biomarker
+Amyloid \_ 42/40 ratio was measured.
+
+``` r
+file_path <- "/Users/yutongxi/Desktop/P8105/HW2/data_mci/combined_data.csv"
+write_csv(combined_data, file = file_path)
+```
